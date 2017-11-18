@@ -34,7 +34,7 @@ class Application(tk.Frame):
         #ImageGallery Frame
         self.image_index = 0
         self.image_paths = self.get_immediate_files('skins/{}'.format(self.current_skin.get()))
-        self.preview_image = 'skins/{}/{}'.format(self.current_skin.get(), self.image_paths[self.image_index])
+        self.preview_image = 'skins/{}/imgs/standby.jpg'.format(self.current_skin.get())
         self.image_frame = tk.Frame(self, width=640, height=390)
         self.image_frame.grid(sticky="nw", row=1, column=0, columnspan=3)
         self.image_frame.grid_propagate(False)
@@ -62,43 +62,37 @@ class Application(tk.Frame):
         self.credits = ttk.Label(self, text='Created by Kuenaimaku')
         self.credits.grid(row=3, column=0, columnspan=2, sticky="nws", padx=10, pady=10)
 
-    def copytree(src, dst, symlinks=False, ignore=None):
-        for item in os.listdir(src):
-            s = os.path.join(src, item)
-            d = os.path.join(dst, item)
-            if os.path.isdir(s):
-                shutil.copytree(s, d, symlinks, ignore)
-            else:
-                shutil.copy2(s, d)
+
+    def copydir(self, source, dest, indent=0):
+        """Copy a directory structure overwriting existing files"""
+        for root, dirs, files in os.walk(source):
+            if not os.path.isdir(root):
+                os.makedirs(root)
+
+            for file in files:
+                rel_path = root.replace(source, '').lstrip(os.sep)
+                dest_path = os.path.join(dest, rel_path)
+
+                if not os.path.isdir(dest_path):
+                    os.makedirs(dest_path)
+
+                shutil.copyfile(os.path.join(root, file), os.path.join(dest_path, file))
+
 
     def set_skin(self):
-        print("select")
         if os.path.isdir('cache'):
             shutil.rmtree('cache')
         if os.path.isdir('imgs'):
             shutil.rmtree('imgs')
-            os.mkdir('imgs')
         if os.path.isdir('se'):
             shutil.rmtree('se')
-            os.mkdir('se')
+        self.copydir('skins/K-SHOOT/imgs', 'imgs')
+        self.copydir('skins/K-SHOOT/se', 'se')
         if self.current_skin.get() == 'K-SHOOT':
             pass
         else:
-            try:
-                copy_tree('skins/{}/imgs'.format(self.current_skin.get()), 'imgs')
-                copy_tree('skins/{}/se'.format(self.current_skin.get()), 'se')
-            except shutil.Error as e:
-                print('Directory not copied. Error: %s' % e)
-                # Any error saying that the directory doesn't exist
-            except AttributeError as e:
-                print('Directory not copied. Error: %s' % e)
-                # Any error saying that the directory doesn't exist
-            except FileNotFoundError as e:
-                print('Directory not copied. Error: %s' % e)
-                # Any error saying that the directory doesn't exist
-            except OSError as e:
-                print('Directory not copied. Error: %s' % e)
-
+            self.copydir('skins/{}/imgs'.format(self.current_skin.get()), 'imgs')
+            self.copydir('skins/{}/se'.format(self.current_skin.get()), 'se')
 
     def get_immediate_subdirectories(self, a_dir):
         return [name for name in os.listdir(a_dir)
@@ -120,13 +114,12 @@ class Application(tk.Frame):
 
 
     def option_changed(self, *args):
-        print(self.current_skin.get())
         self.image_paths = self.get_immediate_files('skins/{}'.format(self.current_skin.get()))
         if len(self.image_paths) > 0:
             self.image_index = 0
             self.reload_image('skins/{}/{}'.format(self.current_skin.get(), self.image_paths[self.image_index]))
         else:
-            self.reload_image('no_preview.png')
+            self.reload_image('skins/{}/imgs/standby.jpg'.format(self.current_skin.get()))
 
     def change_index(self, direction):
         if direction == "Next" and self.image_index < len(self.image_paths)-1:
@@ -141,7 +134,7 @@ class Application(tk.Frame):
         if len(self.image_paths)>0:
             self.reload_image('skins/{}/{}'.format(self.current_skin.get(), self.image_paths[self.image_index]))
         else:
-            self.reload_image('no_preview.png')
+            self.reload_image('skins/{}/imgs/standby.jpg'.format(self.current_skin.get()))
 
 
 root = tk.Tk()
