@@ -11,6 +11,7 @@ class Application(tk.Frame):
         super().__init__(master)
         master.minsize(width=642, height=500)
         master.maxsize(width=642, height=500)
+        self.resize = 640, 360
         self.grid()
         self.create_widgets()
 
@@ -40,7 +41,6 @@ class Application(tk.Frame):
         self.image_frame.grid_propagate(False)
 
         #ImageGallery Image
-        self.resize = 640, 360
         self.image_name = os.path.basename(self.preview_image)
         self.image_name = os.path.splitext(self.image_name)[0]
         self.image = Image.open(self.preview_image)
@@ -86,6 +86,7 @@ class Application(tk.Frame):
             shutil.rmtree('imgs')
         if os.path.isdir('se'):
             shutil.rmtree('se')
+        os.mkdir('cache')
         self.copydir('skins/K-SHOOT/imgs', 'imgs')
         self.copydir('skins/K-SHOOT/se', 'se')
         if self.current_skin.get() == 'K-SHOOT':
